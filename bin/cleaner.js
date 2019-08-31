@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 
-
 const fs = require('fs');
-var colors = require('colors/safe');
+const colors = require('colors/safe');
 
 const filesToRemove = ['./src/App.css', './src/index.css', './src/logo.svg', './public/logo192.png', './public/logo512.png'];
 
