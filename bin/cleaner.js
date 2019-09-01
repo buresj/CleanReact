@@ -86,11 +86,14 @@ const editFiles = async (files) => {
 }
 
 (async () => {
-    removeFiles(filesToRemove)
-        .then(() => console.log(colors.blue('Done removing')))
-        .catch(() => console.log(colors.red('Removal was not fully succesful')))
+    let removal = removeFiles(filesToRemove);
+    removal.then(() => console.log(colors.blue('Done removing'))).catch(() => console.log(colors.red('Removal was not fully succesful')));
 
-    editFiles(filesToEdit)
-        .then(() => console.log(colors.blue('Done editing')))
-        .catch(() => console.log(colors.red('Editing was not fully succesful')))
+    let edited = editFiles(filesToEdit);
+    edited.then(() => console.log(colors.blue('Done editing'))).catch(() => console.log(colors.red('Editing was not fully succesful')));
+
+    await new Promise((resolve, reject) => setTimeout(resolve, 200));
+
+    let result = Promise.all([removal, edited]);
+    result.then(() => console.log(colors.green('Cleaning has been succesful!'))).catch(() => console.log(colors.red('Cleaner ended with some errors!')));
 })();
