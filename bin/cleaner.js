@@ -1,12 +1,10 @@
 #!/usr/bin/env node
 
-const fs = require('fs');
+const fs = require('fs').promises;
 const colors = require('colors/safe');
 
 const filesToRemove = ['./src/App.css', './src/index.css', './src/logo.svg', './public/logo192.png', './public/logo512.png'];
-
-const filesToEdit = [{ app: './src/App.js' }, { index: './src/index.js' }, { readme: './README.md' }, { manifest: './public/manifest.json' }];
-
+const filesToEdit = [{ name: 'app', path: './src/App.js' }, { name: 'index', path: './src/index.js' }, { name: 'readme', path: './README.md' }, { name: 'manifest', path: './public/manifest.json' }];
 const newContent = {
     app:
         `import React from 'react';
@@ -47,40 +45,57 @@ const newContent = {
       }`,
     readme:
         ``
-}
+};
 
 const removeFiles = async (files) => {
-    files.forEach(async (file) => {
-        await fs.unlink(file, (err) => {
+    return await Promise.all(
+        files.map(async (file) => {
             try {
-                if (err) throw err;
-                console.log(colors.orange(`${file} removed`));
+                await fs.unlink(file)
+                console.log(`File at ${file} removed.`)
             } catch (err) {
-                console.log(`Could not find or remove file at ${file}`)
+                console.log(`File at ${file} not found or removed.`)
+                throw err
             }
-        });
-    });
-}
+        })
+    )
+};
 
 const editFiles = async (files) => {
-    files.map(async (file) => {
-        await fs.readFile(Object.values(file)[0], 'utf-8', (err, data) => {
-            if (err) throw (err);
-            const editedContent = data.replace(/[\s\S]+/g, newContent[Object.keys(file)[0]]);
-            fs.writeFile(Object.values(file)[0], editedContent, 'utf-8', (err) => {
-                if (err) throw (err);
-            });
-        });
-        console.log(colors.blue(`${Object.keys(file)[0]} edited`));
-    });
+    return await Promise.all(files.map(async ({ name, path }) => {
+
+        let data;
+
+        try {
+            data = await fs.readFile(path, 'utf-8');
+        } catch (err) {
+            console.log(`Could not find or read file at ${path}`)
+            throw err
+        }
+
+        const editedContent = data.replace(/[\s\S]+/g, newContent[name]);
+
+        try {
+            await fs.writeFile(path, editedContent, 'utf-8');
+            console.log(`${name} edited`);
+        } catch (err) {
+            console.log(`Could not edit file at ${path}`)
+            throw err
+        }
+    }));
 }
 
 (async () => {
-    await Promise.all([
-        removeFiles(filesToRemove),
-        editFiles(filesToEdit),
-        new Promise((resolve) => setTimeout(() => resolve(), 500))
-    ]);
-    console.log(colors.green(`Cleaning finished`))
+    await Promise.all(
+        await removeFiles(filesToRemove)
+            .then(() => console.log(colors.blue('Done removing')))
+            .catch(() => console.log(colors.red('Removal was not fully succesful'))),
+        await editFiles(filesToEdit)
+            .then(() => console.log(colors.blue('Done editing')))
+            .catch(() => console.log(colors.red('Editing was not fully succesful')))
+    ).then(() => console.log(colors.green('Clean React was susccesfull')))
+        .catch((err) => console.log(colors.red(err)))
 })();
+
+
 
