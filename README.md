@@ -1,6 +1,6 @@
 ## Installation
 
-    npm i create-react -g
+    npm i cleanreact -g
 
 ## Usage
 
