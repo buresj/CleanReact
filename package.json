@@ -1,6 +1,6 @@
 {
   "name": "cleanreact",
-  "version": "1.6.0",
+  "version": "1.7.3",
   "description": "Removes and edites usually unused files after Create React App instalation.",
   "main": "bin/cleaner.js",
   "repository": "buresj/CleanReact",
